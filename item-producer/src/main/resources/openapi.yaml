@@ -1,0 +1,287 @@
+---
+openapi: 3.1.0
+tags:
+- name: Game Management
+- name: Player Actions
+- name: Upgrades
+paths:
+  /:
+    get:
+      summary: Retrieve all inventory resources
+      description: Fetch all resources currently available in the inventory.
+      x-quarkus-openapi-method-ref: m98752433_-1109396335
+      tags:
+      - Game Management
+      responses:
+        "200":
+          description: Resources successfully retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemsResponse"
+        "400":
+          description: The game is not running.
+      servers:
+      - url: http://localhost:8081/
+  /collect:
+    post:
+      summary: Collect resources
+      description: Collect the resource available on the player's current tile.
+      x-quarkus-openapi-method-ref: m98752433_799402137
+      tags:
+      - Player Actions
+      responses:
+        "200":
+          description: Resource successfully collected and sent to inventory.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StartResponse"
+        "400":
+          description: Invalid tile or the game is not running.
+        "429":
+          description: Player has recently collected and must wait before collecting
+            again.
+      servers:
+      - url: http://localhost:8081/
+  /move:
+    post:
+      summary: Move player
+      description: "Move the player in the specified direction (left, right, up, or\
+        \ down)."
+      x-quarkus-openapi-method-ref: m98752433_-1586243046
+      tags:
+      - Player Actions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MoveRequest"
+        required: true
+      responses:
+        "200":
+          description: Player successfully moved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MoveResponse"
+        "400":
+          description: Invalid direction or the game is not running.
+        "429":
+          description: Player has recently moved and must wait before moving again.
+      servers:
+      - url: http://localhost:8081/
+  /player:
+    get:
+      summary: Retrieve player information
+      description: Fetch information about the current player.
+      x-quarkus-openapi-method-ref: m98752433_-1988770431
+      tags:
+      - Game Management
+      responses:
+        "200":
+          description: Player information successfully retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerResponse"
+        "400":
+          description: The game is not running.
+      servers:
+      - url: http://localhost:8081/
+  /start:
+    post:
+      summary: Start the game
+      description: Initialize and start the item-producer game. Synchronizes the database
+        with the `Inventory` service.
+      x-quarkus-openapi-method-ref: m98752433_677674067
+      tags:
+      - Game Management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartRequest"
+        required: true
+      responses:
+        "200":
+          description: The game started successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StartResponse"
+        "400":
+          description: Invalid `path` provided.
+      servers:
+      - url: http://localhost:8081/
+  /upgrade/collect:
+    patch:
+      summary: Upgrade collection rate
+      description: Increase the amount of resources collected per action.
+      x-quarkus-openapi-method-ref: m98752433_274012880
+      tags:
+      - Upgrades
+      responses:
+        "204":
+          description: Collection rate upgrade successfully applied.
+        "400":
+          description: Insufficient funds or the game is not running.
+        "404":
+          description: The money was not found.
+      servers:
+      - url: http://localhost:8081/
+  /upgrade/move:
+    patch:
+      summary: Upgrade move speed
+      description: Decrease the tick rate required for the player to move.
+      x-quarkus-openapi-method-ref: m98752433_1889564488
+      tags:
+      - Upgrades
+      responses:
+        "204":
+          description: Move speed upgrade successfully applied.
+        "400":
+          description: Insufficient funds or the game is not running.
+        "404":
+          description: The money was not found.
+      servers:
+      - url: http://localhost:8081/
+  /upgrade/stamina:
+    patch:
+      summary: Upgrade stamina
+      description: Decrease the tick rate required to collect resources.
+      x-quarkus-openapi-method-ref: m98752433_-1142370765
+      tags:
+      - Upgrades
+      responses:
+        "204":
+          description: Stamina upgrade successfully applied.
+        "400":
+          description: Insufficient funds or the game is not running.
+        "404":
+          description: The money was not found.
+      servers:
+      - url: http://localhost:8081/
+  /upgrades:
+    get:
+      summary: Retrieve upgrade costs
+      description: Fetch the costs of all available upgrades.
+      x-quarkus-openapi-method-ref: m98752433_-99503618
+      tags:
+      - Game Management
+      responses:
+        "200":
+          description: Upgrade costs successfully retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpgradeCostResponse"
+        "400":
+          description: The game is not running.
+      servers:
+      - url: http://localhost:8081/
+components:
+  schemas:
+    Direction:
+      type: string
+      enum:
+      - UP
+      - DOWN
+      - RIGHT
+      - LEFT
+    ItemResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        quantity:
+          type: number
+          format: float
+        type:
+          $ref: "#/components/schemas/ResourceType"
+    ItemsResponse:
+      type: object
+      properties:
+        itemsResponse:
+          type: array
+          items:
+            $ref: "#/components/schemas/ItemResponse"
+    LocalDateTime:
+      type: string
+      format: date-time
+      examples:
+      - 2022-03-10T12:15:50
+    MoveRequest:
+      type: object
+      properties:
+        direction:
+          $ref: "#/components/schemas/Direction"
+    MoveResponse:
+      type: object
+      properties:
+        posX:
+          type: integer
+          format: int32
+        posY:
+          type: integer
+          format: int32
+    PlayerResponse:
+      type: object
+      properties:
+        posX:
+          type: integer
+          format: int32
+        posY:
+          type: integer
+          format: int32
+        lastMove:
+          $ref: "#/components/schemas/LocalDateTime"
+        lastCollect:
+          $ref: "#/components/schemas/LocalDateTime"
+        moveSpeedMultiplier:
+          type: number
+          format: float
+        staminaMultiplier:
+          type: number
+          format: float
+        collectRateMultiplier:
+          type: number
+          format: float
+    ResourceType:
+      type: string
+      enum:
+      - MONEY
+      - GROUND
+      - WATER
+      - ROCK
+      - WOOD
+    StartRequest:
+      type: object
+      properties:
+        mapPath:
+          type: string
+    StartResponse:
+      type: object
+      properties:
+        map:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: "#/components/schemas/ResourceType"
+    UpgradeCostResponse:
+      type: object
+      properties:
+        upgradeCollectCost:
+          type: number
+          format: float
+        upgradeMoveCost:
+          type: number
+          format: float
+        upgradeStaminaCost:
+          type: number
+          format: float
+info:
+  title: item-producer API
+  version: 1.0.0
