@@ -1,4 +1,4 @@
-Once the project is opened in your IDE, you can type the following commands to start every server:
+Once the project is opened in your IDE, you can type the following commands to launch every server:
 
 42sh$ mvn clean install
 
